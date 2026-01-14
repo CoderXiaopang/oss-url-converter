@@ -2,20 +2,22 @@
 Flask 主应用 - OSS 文件上传与 URL 转换服务
 """
 import os
-import json
 import uuid
 import threading
-from functools import wraps
-from flask import Flask, render_template, request, jsonify, Response, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify
+from flask_basicauth import BasicAuth
 from werkzeug.utils import secure_filename
 from oss_client import oss_client
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 最大 100MB
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'oss-converter-secret-key-change-me')
 
-# 认证密码（从环境变量获取）
-AUTH_PASSWORD = os.environ.get('AUTH_PASSWORD', 'admin123')
+# Basic Auth 配置
+app.config['BASIC_AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME', 'admin')
+app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD', 'admin123')
+app.config['BASIC_AUTH_FORCE'] = True  # 强制所有请求都需要认证
+
+basic_auth = BasicAuth(app)
 
 # 任务存储（内存中）
 tasks = {}
@@ -41,25 +43,6 @@ def create_task_id() -> str:
     return str(uuid.uuid4())
 
 
-def login_required(f):
-    """登录验证装饰器"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get('logged_in'):
-            # 检测是否为 AJAX 请求（包括文件上传）
-            is_ajax = (
-                request.is_json or 
-                request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
-                request.headers.get('Accept', '').startswith('application/json') or
-                'multipart/form-data' in request.content_type if request.content_type else False
-            )
-            if is_ajax:
-                return jsonify({'code': 401, 'msg': '请先登录'}), 401
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 @app.errorhandler(413)
 def request_entity_too_large(error):
     """文件太大错误处理"""
@@ -72,40 +55,13 @@ def internal_error(error):
     return jsonify({'code': 500, 'msg': '服务器内部错误'}), 500
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """登录页面"""
-    if session.get('logged_in'):
-        return redirect(url_for('index'))
-    
-    error = None
-    if request.method == 'POST':
-        password = request.form.get('password', '')
-        if password == AUTH_PASSWORD:
-            session['logged_in'] = True
-            return redirect(url_for('index'))
-        else:
-            error = '密码错误，请重试'
-    
-    return render_template('login.html', error=error)
-
-
-@app.route('/logout')
-def logout():
-    """登出"""
-    session.pop('logged_in', None)
-    return redirect(url_for('login'))
-
-
 @app.route('/')
-@login_required
 def index():
     """首页"""
     return render_template('index.html')
 
 
 @app.route('/upload_file', methods=['POST'])
-@login_required
 def upload_file():
     """
     文件上传接口
@@ -142,7 +98,6 @@ def upload_file():
 
 
 @app.route('/convert_url', methods=['POST'])
-@login_required
 def convert_url():
     """
     URL 转换启动接口
@@ -235,7 +190,6 @@ def convert_url():
 
 
 @app.route('/progress/<task_id>', methods=['GET'])
-@login_required
 def get_progress(task_id: str):
     """
     获取转换进度

@@ -7,7 +7,6 @@
 - **文件上传**：支持任意文件上传至 S3 兼容存储（如 Alist），返回预签名下载链接
 - **URL 批量转换**：自动识别文本中的所有 URL，下载资源并上传至 OSS，批量替换为新地址
 - **实时进度**：异步处理，支持实时查询转换进度
-- **登录保护**：密码认证，防止未授权访问
 
 ## 快速开始
 
@@ -27,10 +26,6 @@ ALIST_ACCESS_KEY=your-access-key
 ALIST_SECRET_KEY=your-secret-key
 ALIST_BUCKET=your-bucket-name
 URL_EXPIRES=3600
-
-# 设置访问密码
-AUTH_PASSWORD=your-secure-password
-SECRET_KEY=your-random-secret-key
 ```
 
 3. 启动服务：
