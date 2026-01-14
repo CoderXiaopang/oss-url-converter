@@ -46,7 +46,14 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
-            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # 检测是否为 AJAX 请求（包括文件上传）
+            is_ajax = (
+                request.is_json or 
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+                request.headers.get('Accept', '').startswith('application/json') or
+                'multipart/form-data' in request.content_type if request.content_type else False
+            )
+            if is_ajax:
                 return jsonify({'code': 401, 'msg': '请先登录'}), 401
             return redirect(url_for('login'))
         return f(*args, **kwargs)

@@ -552,6 +552,14 @@ https://example.com/1.jpg
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
+            // 全局 AJAX 错误处理：检测 401 跳转登录
+            $(document).ajaxError(function(event, jqXHR) {
+                if (jqXHR.status === 401) {
+                    alert('登录已过期，请重新登录');
+                    window.location.href = '/login';
+                }
+            });
+
             // 标签页切换逻辑
             $('.tab-btn').click(function() {
                 $('.tab-btn').removeClass('active');
@@ -582,9 +590,11 @@ https://example.com/1.jpg
                             $('#upload-result').html('<strong>上传失败：</strong> ' + res.msg);
                         }
                     },
-                    error: function() {
-                        $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
-                        $('#upload-result').html('<strong>上传失败：</strong> 服务器连接异常');
+                    error: function(jqXHR) {
+                        if (jqXHR.status !== 401) {
+                            $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
+                            $('#upload-result').html('<strong>上传失败：</strong> 服务器连接异常');
+                        }
                     }
                 });
             });
@@ -628,8 +638,10 @@ https://example.com/1.jpg
                             alert('转换启动失败：' + res.msg);
                         }
                     },
-                    error: function() {
-                        alert('转换请求发送失败，请检查服务器！');
+                    error: function(jqXHR) {
+                        if (jqXHR.status !== 401) {
+                            alert('转换请求发送失败，请检查服务器！');
+                        }
                     }
                 });
             });
@@ -657,9 +669,11 @@ https://example.com/1.jpg
                                 alert('进度查询失败：' + res.msg);
                             }
                         },
-                        error: function() {
+                        error: function(jqXHR) {
                             clearInterval(pollInterval);
-                            alert('进度查询失败，服务器连接异常！');
+                            if (jqXHR.status !== 401) {
+                                alert('进度查询失败，服务器连接异常！');
+                            }
                         }
                     });
                 }, 500);
