@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSS 文件/URL 转换工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        /* 全局重置 & Apple 核心风格 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f8f8fa 0%, #f2f2f7 100%);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        /* 容器 - Apple 风格玻璃质感卡片 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+        }
+
+        /* 头部 - 极简留白 */
+        .header {
+            padding: 56px 48px 32px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .header h2 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 15px;
+            color: #86868b;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* 标签页 - 极致简约 */
+        .tabs {
+            display: flex;
+            padding: 0 48px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 20px 0;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #86868b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            position: relative;
+            outline: none;
+        }
+
+        .tab-btn.active {
+            color: #0071e3;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 56px;
+            height: 3px;
+            background: #0071e3;
+            border-radius: 3px;
+        }
+
+        .tab-btn:hover {
+            color: #1d1d1f;
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .tab-btn i {
+            margin-right: 10px;
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        /* 面板 - 充足留白 */
+        .panels {
+            padding-bottom: 48px;
+        }
+
+        .panel {
+            padding: 48px;
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        /* 表单元素 - 精致质感 */
+        .form-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            font-size: 16px;
+            color: #1d1d1f;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #0071e3;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.08);
+        }
+
+        /* 文件上传框特殊样式 */
+        input[type="file"].form-control {
+            padding: 14px 20px;
+            cursor: pointer;
+        }
+
+        /* 按钮 - Apple 原生质感 */
+        .btn {
+            padding: 14px 32px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: none;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #0071e3;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+        }
+
+        .btn-success {
+            background: #34c759;
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: #32d74b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.2);
+        }
+
+        .btn-success:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1d1d1f;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* 上传结果 - 柔和提示 */
+        .upload-result {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .alert-success {
+            background: rgba(52, 199, 89, 0.08);
+            color: #1d1d1f;
+            border: 1px solid rgba(52, 199, 89, 0.15);
+        }
+
+        .alert-danger {
+            background: rgba(255, 59, 48, 0.08);
+            color: #1d1d1f;
+            border: 1px solid rgba(255, 59, 48, 0.15);
+        }
+
+        .upload-result a {
+            color: #0071e3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .upload-result a:hover {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        /* 文本域 - 通透质感 */
+        #source-text, #converted-text {
+            min-height: 240px;
+            resize: vertical;
+            line-height: 1.7;
+            font-family: -apple-system, BlinkMacSystemFont, monospace;
+        }
+
+        #converted-text {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 进度条 - 细腻样式 */
+        .progress {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #0071e3;
+            border-radius: 999px;
+            transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 进度项 - 卡片质感 */
+        .progress-item {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .progress-item:hover {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .progress-item div {
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .progress-item div:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-success {
+            color: #34c759;
+            font-weight: 500;
+        }
+
+        .status-error {
+            color: #ff3b30;
+            font-weight: 500;
+        }
+
+        .status-processing {
+            color: #ff9500;
+            font-weight: 500;
+        }
+
+        .progress-item a {
+            color: #0071e3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .progress-item a:hover {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        /* 响应式 - 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 16px;
+            }
+            
+            .container {
+                border-radius: 24px;
+            }
+
+            .header {
+                padding: 40px 24px 24px;
+            }
+
+            .header h2 {
+                font-size: 24px;
+            }
+
+            .tabs {
+                padding: 0 24px;
+            }
+
+            .tab-btn {
+                padding: 16px 0;
+                font-size: 14px;
+            }
+
+            .panel {
+                padding: 32px 24px;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+
+            .col-md-6 {
+                width: 100%;
+                margin-bottom: 24px;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 12px;
+                padding: 14px 24px;
+            }
+
+            .btn.ms-2 {
+                margin-left: 0 !important;
+            }
+
+            #source-text, #converted-text {
+                min-height: 200px;
+            }
+        }
+
+        /* 动画 - 丝滑过渡 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 辅助类 */
+        .d-none {
+            display: none !important;
+        }
+
+        .ms-2 {
+            margin-left: 12px;
+        }
+
+        .mb-3 {
+            margin-bottom: 24px;
+        }
+
+        .mb-4 {
+            margin-bottom: 32px;
+        }
+
+        .mt-4 {
+            margin-top: 32px;
+        }
+
+        .overflow-auto {
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -12px;
+        }
+
+        .col-md-6 {
+            width: 50%;
+            padding: 0 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>OSS 文件/URL 转换工具</h2>
+            <p>简单、高效地管理您的文件存储链接</p>
+        </div>
+        
+        <!-- 标签页切换 -->
+        <div class="tabs" id="mainTab">
+            <button class="tab-btn active" id="upload-tab" data-target="#upload-panel">
+                <i class="fa fa-upload"></i> 文件上传至 OSS
+            </button>
+            <button class="tab-btn" id="convert-tab" data-target="#convert-panel">
+                <i class="fa fa-link"></i> 文本 URL 转 OSS 地址
+            </button>
+        </div>
+
+        <!-- 上传面板 -->
+        <div class="panels">
+            <div class="panel active" id="upload-panel">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file-upload" class="form-label">选择要上传的文件（支持任意格式）</label>
+                        <input class="form-control" type="file" id="file-upload" name="file" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-cloud-upload"></i> 上传至 OSS
+                    </button>
+                </form>
+                <!-- 上传结果展示 -->
+                <div class="upload-result d-none" id="upload-result"></div>
+            </div>
+
+            <!-- 转换面板 -->
+            <div class="panel" id="convert-panel">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="source-text" class="form-label">原始文本（包含需要转换的 URL）</label>
+                        <textarea class="form-control" id="source-text" rows="8" placeholder="请粘贴包含 URL 的文本，例如：
+https://example.com/1.jpg
+这是测试文本 https://example.com/2.pdf 测试URL转换"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="converted-text" class="form-label">转换后的文本（实时更新）</label>
+                        <textarea class="form-control" id="converted-text" rows="8" readonly placeholder="转换后的文本将显示在这里..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <button id="start-convert" class="btn btn-success">
+                        <i class="fa fa-refresh"></i> 开始转换 URL
+                    </button>
+                    <button id="clear-all" class="btn btn-secondary ms-2">
+                        <i class="fa fa-trash"></i> 清空内容
+                    </button>
+                </div>
+
+                <!-- 整体进度 -->
+                <div class="mb-3">
+                    <label class="form-label">整体转换进度</label>
+                    <div class="progress">
+                        <div class="progress-bar" id="total-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                </div>
+
+                <!-- 单个URL进度列表 -->
+                <div class="mt-4">
+                    <label class="form-label">URL 转换进度列表</label>
+                    <div id="progress-list" class="overflow-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 标签页切换逻辑
+            $('.tab-btn').click(function() {
+                $('.tab-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const targetPanel = $(this).attr('data-target');
+                $('.panel').removeClass('active');
+                $(targetPanel).addClass('active');
+            });
+
+            // 上传表单提交
+            $('#upload-form').submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                $.ajax({
+                    url: '/upload_file',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(res) {
+                        if (res.code === 200) {
+                            $('#upload-result').removeClass('d-none alert-danger').addClass('alert-success');
+                            $('#upload-result').html('<strong>上传成功！</strong> 文件OSS地址：<a href="' + res.data.url + '" target="_blank">' + res.data.url + '</a>');
+                        } else {
+                            $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
+                            $('#upload-result').html('<strong>上传失败：</strong> ' + res.msg);
+                        }
+                    },
+                    error: function() {
+                        $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
+                        $('#upload-result').html('<strong>上传失败：</strong> 服务器连接异常');
+                    }
+                });
+            });
+
+            // 清空按钮逻辑
+            $('#clear-all').click(function() {
+                $('#source-text').val('');
+                $('#converted-text').val('');
+                $('#progress-list').empty();
+                $('#total-progress').css('width', '0%').text('0%').attr('aria-valuenow', 0);
+            });
+
+            // 开始转换逻辑
+            $('#start-convert').click(function() {
+                const sourceText = $('#source-text').val().trim();
+                if (!sourceText) {
+                    alert('请输入包含 URL 的文本！');
+                    return;
+                }
+
+                $('#progress-list').empty();
+                $('#converted-text').val('');
+                $('#total-progress').css('width', '0%').text('0%').attr('aria-valuenow', 0);
+
+                $.ajax({
+                    url: '/convert_url',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ text: sourceText }),
+                    success: function(res) {
+                        if (res.code === 200) {
+                            if (!res.data.task_id) {
+                                // 没有 URL 需要转换
+                                $('#converted-text').val(sourceText);
+                                $('#total-progress').css('width', '100%').text('100%').attr('aria-valuenow', 100);
+                                $('#progress-list').html('<div class="progress-item"><div>未检测到需要转换的 URL</div></div>');
+                                return;
+                            }
+                            pollConvertProgress(res.data.task_id);
+                        } else {
+                            alert('转换启动失败：' + res.msg);
+                        }
+                    },
+                    error: function() {
+                        alert('转换请求发送失败，请检查服务器！');
+                    }
+                });
+            });
+
+            // 轮询获取转换进度
+            function pollConvertProgress(taskId) {
+                const pollInterval = setInterval(function() {
+                    $.ajax({
+                        url: '/progress/' + taskId,
+                        type: 'GET',
+                        success: function(res) {
+                            if (res.code === 200) {
+                                const data = res.data;
+                                const progress = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+                                $('#total-progress').css('width', progress + '%').text(progress + '%').attr('aria-valuenow', progress);
+                                
+                                $('#converted-text').val(data.converted_text);
+                                updateProgressList(data.urls);
+                                
+                                if (data.completed === data.total && data.total > 0) {
+                                    clearInterval(pollInterval);
+                                }
+                            } else {
+                                clearInterval(pollInterval);
+                                alert('进度查询失败：' + res.msg);
+                            }
+                        },
+                        error: function() {
+                            clearInterval(pollInterval);
+                            alert('进度查询失败，服务器连接异常！');
+                        }
+                    });
+                }, 500);
+            }
+
+            // 更新URL进度列表
+            function updateProgressList(urls) {
+                if (!urls || urls.length === 0) return;
+                
+                $('#progress-list').empty();
+                urls.forEach(function(item) {
+                    let statusIcon = '';
+                    let statusClass = '';
+                    switch (item.status) {
+                        case 'processing':
+                            statusIcon = '<i class="fa fa-spinner fa-spin"></i>';
+                            statusClass = 'status-processing';
+                            break;
+                        case 'success':
+                            statusIcon = '<i class="fa fa-check"></i>';
+                            statusClass = 'status-success';
+                            break;
+                        case 'failed':
+                            statusIcon = '<i class="fa fa-times"></i>';
+                            statusClass = 'status-error';
+                            break;
+                        case 'skipped':
+                            statusIcon = '<i class="fa fa-minus-circle"></i>';
+                            statusClass = 'status-processing';
+                            break;
+                    }
+                    const itemHtml = $('<div class="progress-item"></div>');
+                    itemHtml.append($('<div><strong>原始URL：</strong>' + item.original_url + '</div>'));
+                    itemHtml.append($('<div class="' + statusClass + '"><strong>状态：</strong>' + statusIcon + ' ' + (item.status_text || item.status) + '</div>'));
+                    if (item.oss_url) {
+                        itemHtml.append($('<div><strong>OSS地址：</strong><a href="' + item.oss_url + '" target="_blank">' + item.oss_url + '</a></div>'));
+                    }
+                    $('#progress-list').append(itemHtml);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

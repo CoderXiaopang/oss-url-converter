@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  oss-converter:
+    build: .
+    container_name: oss-converter
+    ports:
+      - "4006:5001"
+    environment:
+      - ALIST_ENDPOINT=${ALIST_ENDPOINT}
+      - ALIST_ACCESS_KEY=${ALIST_ACCESS_KEY}
+      - ALIST_SECRET_KEY=${ALIST_SECRET_KEY}
+      - ALIST_BUCKET=${ALIST_BUCKET}
+      - URL_EXPIRES=${URL_EXPIRES:-3600}
+    restart: unless-stopped
