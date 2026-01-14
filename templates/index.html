@@ -42,6 +42,29 @@
             padding: 56px 48px 32px;
             text-align: center;
             border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            position: relative;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+            background: rgba(0, 0, 0, 0.05);
+            color: #86868b;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
         }
 
         .header h2 {
@@ -453,6 +476,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <a href="/logout" class="logout-btn">登出</a>
             <h2>OSS 文件/URL 转换工具</h2>
             <p>简单、高效地管理您的文件存储链接</p>
         </div>

@@ -12,4 +12,6 @@ services:
       - ALIST_SECRET_KEY=${ALIST_SECRET_KEY}
       - ALIST_BUCKET=${ALIST_BUCKET}
       - URL_EXPIRES=${URL_EXPIRES:-3600}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-admin123}
+      - SECRET_KEY=${SECRET_KEY:-oss-converter-secret-key}
     restart: unless-stopped
