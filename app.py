@@ -5,16 +5,38 @@ import os
 import uuid
 import threading
 from functools import wraps
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from datetime import datetime
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, current_app
 from werkzeug.utils import secure_filename
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from oss_client import oss_client
+from models import db, User, UploadHistory
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 最大 100MB
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'oss-converter-secret-key')
 
-# 认证密码
-AUTH_PASSWORD = os.environ.get('AUTH_PASSWORD', 'admin123')
+# 数据库配置
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+os.makedirs(DATA_DIR, exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(DATA_DIR, 'oss_converter.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# 初始化数据库
+db.init_app(app)
+
+# 初始化 Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = '请先登录'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """加载用户"""
+    return User.query.get(int(user_id))
+
 
 # 任务存储（内存中）
 tasks = {}
@@ -40,40 +62,240 @@ def create_task_id() -> str:
     return str(uuid.uuid4())
 
 
-def login_required(f):
-    """登录验证装饰器"""
+def admin_required(f):
+    """管理员权限验证装饰器"""
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not session.get('logged_in'):
+        if not current_user.is_authenticated:
             if request.is_json:
                 return jsonify({'code': 401, 'msg': '请先登录'}), 401
             return redirect(url_for('login'))
+        if not current_user.is_admin():
+            if request.is_json:
+                return jsonify({'code': 403, 'msg': '需要管理员权限'}), 403
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated
+
+
+def init_db():
+    """初始化数据库"""
+    with app.app_context():
+        db.create_all()
+
+
+@app.route('/register', methods=['GET'])
+def register_page():
+    """注册页面"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    return render_template('register.html')
+
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    """注册 API"""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'code': 400, 'msg': '请求数据无效'}), 400
+
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    confirm_password = data.get('confirm_password', '')
+    email = data.get('email', '').strip()
+
+    # 验证
+    if not username:
+        return jsonify({'code': 400, 'msg': '用户名不能为空'}), 400
+    if len(username) < 3 or len(username) > 32:
+        return jsonify({'code': 400, 'msg': '用户名长度应在3-32位之间'}), 400
+    if not password:
+        return jsonify({'code': 400, 'msg': '密码不能为空'}), 400
+    if len(password) < 6:
+        return jsonify({'code': 400, 'msg': '密码长度至少6位'}), 400
+    if password != confirm_password:
+        return jsonify({'code': 400, 'msg': '两次密码输入不一致'}), 400
+    if email and '@' not in email:
+        return jsonify({'code': 400, 'msg': '邮箱格式不正确'}), 400
+
+    # 检查用户名是否已存在
+    if User.query.filter_by(username=username).first():
+        return jsonify({'code': 400, 'msg': '用户名已存在'}), 400
+
+    # 检查是否为第一个用户
+    is_first_user = User.query.count() == 0
+
+    # 创建用户
+    user = User(
+        username=username,
+        email=email or None,
+        role='admin' if is_first_user else 'user',
+        status='active' if is_first_user else 'inactive',
+        created_at=datetime.utcnow()
+    )
+    user.set_password(password)
+
+    db.session.add(user)
+    db.session.commit()
+
+    # 第一个用户自动登录
+    if is_first_user:
+        login_user(user)
+
+    return jsonify({
+        'code': 200,
+        'msg': '注册成功' + ('，您已成为管理员' if is_first_user else '，请等待管理员审核'),
+        'data': {
+            'is_first_user': is_first_user,
+            'needs_activation': not is_first_user
+        }
+    })
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """登录页面"""
-    if session.get('logged_in'):
+    if current_user.is_authenticated:
         return redirect(url_for('index'))
-    
+
     error = None
     if request.method == 'POST':
-        if request.form.get('password') == AUTH_PASSWORD:
-            session['logged_in'] = True
-            return redirect(url_for('index'))
-        error = '密码错误'
-    
+        # 处理 JSON 请求
+        if request.is_json:
+            data = request.get_json()
+            username = data.get('username', '').strip()
+            password = data.get('password', '')
+        else:
+            # 处理表单提交
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '')
+
+        if not username or not password:
+            if request.is_json:
+                return jsonify({'code': 400, 'msg': '用户名和密码不能为空'}), 400
+            error = '用户名和密码不能为空'
+        else:
+            user = User.query.filter_by(username=username).first()
+
+            if user and user.check_password(password):
+                if not user.is_active_user():
+                    if request.is_json:
+                        return jsonify({'code': 403, 'msg': '账号未激活，请联系管理员'}), 403
+                    error = '账号未激活，请联系管理员'
+                else:
+                    login_user(user)
+                    # 更新最后登录时间
+                    user.last_login = datetime.utcnow()
+                    db.session.commit()
+                    if request.is_json:
+                        return jsonify({'code': 200, 'msg': '登录成功', 'data': user.to_dict()})
+                    return redirect(url_for('index'))
+            else:
+                if request.is_json:
+                    return jsonify({'code': 401, 'msg': '用户名或密码错误'}), 401
+                error = '用户名或密码错误'
+
     return render_template('login.html', error=error)
+
+
+@app.route('/api/current_user')
+@login_required
+def api_current_user():
+    """获取当前用户信息"""
+    return jsonify({
+        'code': 200,
+        'data': current_user.to_dict()
+    })
 
 
 @app.route('/logout')
 def logout():
     """登出"""
-    session.pop('logged_in', None)
+    logout_user()
     return redirect(url_for('login'))
 
+
+# ==================== 用户管理 API ====================
+
+@app.route('/api/users', methods=['GET'])
+@admin_required
+def api_users():
+    """获取用户列表"""
+    users = User.query.order_by(User.created_at.desc()).all()
+    return jsonify({
+        'code': 200,
+        'data': [user.to_dict() for user in users]
+    })
+
+
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+@admin_required
+def api_update_user(user_id):
+    """更新用户信息"""
+    user = User.query.get_or_404(user_id)
+
+    # 不允许删除自己
+    if user_id == current_user.id:
+        return jsonify({'code': 403, 'msg': '不能修改自己的基本信息'}), 403
+
+    data = request.get_json()
+
+    if 'email' in data:
+        user.email = data['email'] or None
+
+    if 'role' in data and data['role'] in ['admin', 'user']:
+        user.role = data['role']
+
+    db.session.commit()
+
+    return jsonify({
+        'code': 200,
+        'msg': '更新成功',
+        'data': user.to_dict()
+    })
+
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@admin_required
+def api_delete_user(user_id):
+    """删除用户"""
+    user = User.query.get_or_404(user_id)
+
+    # 不允许删除自己
+    if user_id == current_user.id:
+        return jsonify({'code': 403, 'msg': '不能删除自己'}), 403
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({
+        'code': 200,
+        'msg': '删除成功'
+    })
+
+
+@app.route('/api/users/<int:user_id>/status', methods=['PUT'])
+@admin_required
+def api_toggle_user_status(user_id):
+    """切换用户启用状态"""
+    user = User.query.get_or_404(user_id)
+
+    # 不允许禁用自己
+    if user_id == current_user.id:
+        return jsonify({'code': 403, 'msg': '不能禁用自己'}), 403
+
+    user.status = 'active' if user.status == 'inactive' else 'inactive'
+    db.session.commit()
+
+    return jsonify({
+        'code': 200,
+        'msg': '状态更新成功',
+        'data': user.to_dict()
+    })
+
+
+# ==================== 错误处理 ====================
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
@@ -87,6 +309,8 @@ def internal_error(error):
     return jsonify({'code': 500, 'msg': '服务器内部错误'}), 500
 
 
+# ==================== 页面路由 ====================
+
 @app.route('/')
 @login_required
 def index():
@@ -94,41 +318,63 @@ def index():
     return render_template('index.html')
 
 
+# ==================== 文件上传 API ====================
+
 @app.route('/upload_file', methods=['POST'])
 @login_required
 def upload_file():
     """
     文件上传接口
-    接收文件并上传到 OSS，返回访问地址
+    支持多文件上传，返回多个 URL
     """
-    if 'file' not in request.files:
+    files = request.files.getlist('files')
+
+    if not files or all(f.filename == '' for f in files):
         return jsonify({'code': 400, 'msg': '没有选择文件'}), 400
 
-    file = request.files['file']
+    results = []
+    for file in files:
+        if file.filename == '':
+            continue
 
-    if file.filename == '':
-        return jsonify({'code': 400, 'msg': '没有选择文件'}), 400
+        # 获取安全的文件名
+        filename = secure_filename(file.filename)
+        if not filename:
+            filename = file.filename
 
-    # 获取安全的文件名
-    filename = secure_filename(file.filename)
-    if not filename:
-        # 如果文件名被清空（例如中文文件名），使用原始文件名
-        filename = file.filename
+        # 上传到 OSS
+        result = oss_client.upload_from_stream(file.stream, filename)
 
-    # 上传到 OSS
-    result = oss_client.upload_from_stream(file.stream, filename)
+        if result['success']:
+            # 记录上传历史
+            history = UploadHistory(
+                user_id=current_user.id,
+                filename=filename,
+                oss_url=result['url'],
+                object_key=result['object_key'],
+                file_size=None,  # 文件大小需要从 file.stream 获取，但此时已读取
+                uploaded_at=datetime.utcnow()
+            )
+            db.session.add(history)
+            db.session.commit()
 
-    if result['success']:
-        return jsonify({
-            'code': 200,
-            'data': {
+            results.append({
                 'url': result['url'],
                 'filename': filename,
-                'object_key': result['object_key']
-            }
-        })
-    else:
-        return jsonify({'code': 500, 'msg': result.get('error', '上传失败')}), 500
+                'object_key': result['object_key'],
+                'success': True
+            })
+        else:
+            results.append({
+                'filename': filename,
+                'error': result.get('error', '上传失败'),
+                'success': False
+            })
+
+    return jsonify({
+        'code': 200,
+        'data': results
+    })
 
 
 @app.route('/convert_url', methods=['POST'])
@@ -248,5 +494,7 @@ def get_progress(task_id: str):
 
 
 if __name__ == '__main__':
+    # 初始化数据库
+    init_db()
     # 开发模式运行
     app.run(host='0.0.0.0', port=5001, debug=True)

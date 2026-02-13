@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - OSS 文件/URL 转换工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f8f8fa 0%, #f2f2f7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-box {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        }
+
+        .register-box h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .register-box .subtitle {
+            font-size: 15px;
+            color: #86868b;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .form-control:focus {
+            border-color: #0071e3;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.08);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 999px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            margin-top: 24px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #0071e3;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1d1d1f;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .error-message, .success-message {
+            font-size: 14px;
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .error-message {
+            color: #ff3b30;
+            background: rgba(255, 59, 48, 0.08);
+        }
+
+        .success-message {
+            color: #34c759;
+            background: rgba(52, 199, 89, 0.08);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #86868b;
+        }
+
+        .login-link a {
+            color: #0071e3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #86868b;
+            margin-top: 12px;
+            text-align: center;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h2>创建账户</h2>
+        <p class="subtitle">注册以使用 OSS 文件转换工具</p>
+        <form id="register-form">
+            <label for="username" class="form-label">用户名</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="3-32位字符" required>
+
+            <label for="email" class="form-label">邮箱（可选）</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com">
+
+            <label for="password" class="form-label">密码</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="至少6位" required>
+
+            <label for="confirm-password" class="form-label">确认密码</label>
+            <input type="password" class="form-control" id="confirm-password" name="confirm-password" placeholder="再次输入密码" required>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-user-plus"></i> 注册
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/login'">
+                <i class="fa fa-sign-in"></i> 返回登录
+            </button>
+        </form>
+        <div id="message"></div>
+        <p class="hint">提示：第一个注册的用户将自动成为管理员并直接激活</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script>
+        $(function() {
+            $('#register-form').submit(function(e) {
+                e.preventDefault();
+
+                var username = $('#username').val().trim();
+                var email = $('#email').val().trim();
+                var password = $('#password').val();
+                var confirmPassword = $('#confirm-password').val();
+
+                // 前端验证
+                if (!username) {
+                    showMessage('用户名不能为空', 'error');
+                    return;
+                }
+                if (username.length < 3 || username.length > 32) {
+                    showMessage('用户名长度应在3-32位之间', 'error');
+                    return;
+                }
+                if (!password) {
+                    showMessage('密码不能为空', 'error');
+                    return;
+                }
+                if (password.length < 6) {
+                    showMessage('密码长度至少6位', 'error');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    showMessage('两次密码输入不一致', 'error');
+                    return;
+                }
+                if (email && email.indexOf('@') === -1) {
+                    showMessage('邮箱格式不正确', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/register',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        confirm_password: confirmPassword
+                    }),
+                    success: function(res) {
+                        if (res.code === 200) {
+                            showMessage(res.msg, 'success');
+                            if (res.data.is_first_user) {
+                                setTimeout(function() {
+                                    window.location.href = '/';
+                                }, 1000);
+                            } else {
+                                setTimeout(function() {
+                                    window.location.href = '/login';
+                                }, 2000);
+                            }
+                        } else {
+                            showMessage(res.msg, 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        var msg = '注册失败';
+                        if (xhr.responseJSON && xhr.responseJSON.msg) {
+                            msg = xhr.responseJSON.msg;
+                        }
+                        showMessage(msg, 'error');
+                    }
+                });
+            });
+
+            function showMessage(text, type) {
+                var messageDiv = $('#message');
+                messageDiv.removeClass('error-message success-message');
+                messageDiv.addClass(type === 'error' ? 'error-message' : 'success-message');
+                messageDiv.text(text);
+            }
+        });
+    </script>
+</body>
+</html>

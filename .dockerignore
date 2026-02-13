@@ -10,3 +10,4 @@ venv
 *.md
 参考设计.html
 .DS_Store
+data/

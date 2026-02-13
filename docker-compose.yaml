@@ -12,4 +12,10 @@ services:
       - ALIST_SECRET_KEY=${ALIST_SECRET_KEY}
       - ALIST_BUCKET=${ALIST_BUCKET}
       - URL_EXPIRES=${URL_EXPIRES:-3600}
+      - SECRET_KEY=${SECRET_KEY:-oss-converter-secret-key}
     restart: unless-stopped
+    volumes:
+      - oss_data:/app/data
+
+volumes:
+  oss_data:

@@ -40,6 +40,31 @@
             position: relative;
         }
 
+        .header-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .header-info .username {
+            font-weight: 600;
+        }
+
+        .header-info .badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(0, 113, 227, 0.1);
+            color: #0071e3;
+        }
+
+        .header-info .badge.admin {
+            background: rgba(255, 159, 10, 0.1);
+            color: #ff9f0a;
+        }
+
         .logout-btn {
             position: absolute;
             top: 20px;
@@ -142,11 +167,6 @@
             box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.08);
         }
 
-        input[type="file"].form-control {
-            padding: 14px 20px;
-            cursor: pointer;
-        }
-
         .btn {
             padding: 14px 32px;
             border-radius: 999px;
@@ -180,6 +200,15 @@
             background: #32d74b;
         }
 
+        .btn-danger {
+            background: #ff3b30;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #ff453a;
+        }
+
         .btn-secondary {
             background: rgba(0, 0, 0, 0.05);
             color: #1d1d1f;
@@ -189,8 +218,193 @@
             background: rgba(0, 0, 0, 0.08);
         }
 
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
         .btn i {
             margin-right: 10px;
+        }
+
+        /* 拖拽上传区域 */
+        .drop-zone {
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .drop-zone.dragover {
+            border-color: #0071e3;
+            background: rgba(0, 113, 227, 0.05);
+        }
+
+        .drop-zone-icon {
+            font-size: 48px;
+            color: #86868b;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone-text {
+            font-size: 16px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+
+        .drop-zone-hint {
+            font-size: 14px;
+            color: #a1a1a6;
+        }
+
+        /* 文件队列 */
+        .file-queue {
+            margin-top: 24px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .file-icon {
+            font-size: 24px;
+            color: #86868b;
+            margin-right: 16px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 15px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            font-size: 13px;
+            color: #86868b;
+        }
+
+        .file-status {
+            margin-left: 16px;
+        }
+
+        .file-status.success {
+            color: #34c759;
+        }
+
+        .file-status.error {
+            color: #ff3b30;
+        }
+
+        .file-status.uploading {
+            color: #0071e3;
+        }
+
+        .remove-file-btn {
+            background: none;
+            border: none;
+            color: #86868b;
+            cursor: pointer;
+            margin-left: 12px;
+            padding: 8px;
+            transition: color 0.3s;
+        }
+
+        .remove-file-btn:hover {
+            color: #ff3b30;
+        }
+
+        /* 用户管理表格 */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .users-table th {
+            background: rgba(0, 0, 0, 0.02);
+            font-weight: 600;
+            font-size: 14px;
+            color: #86868b;
+        }
+
+        .users-table td {
+            font-size: 15px;
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: rgba(52, 199, 89, 0.1);
+            color: #34c759;
+        }
+
+        .status-badge.inactive {
+            background: rgba(142, 142, 147, 0.1);
+            color: #8e8e93;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .role-badge.admin {
+            background: rgba(255, 159, 10, 0.1);
+            color: #ff9f0a;
+        }
+
+        .role-badge.user {
+            background: rgba(0, 113, 227, 0.1);
+            color: #0071e3;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
         }
 
         .upload-result {
@@ -214,6 +428,31 @@
             color: #0071e3;
             text-decoration: none;
             font-weight: 500;
+        }
+
+        .upload-result a:hover {
+            text-decoration: underline;
+        }
+
+        .result-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .result-item.error {
+            color: #ff3b30;
+        }
+
+        .result-item a {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         #source-text, #converted-text {
@@ -282,11 +521,56 @@
             font-weight: 500;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
+        /* 编辑用户对话框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal h3 {
+            margin-bottom: 24px;
+            font-size: 20px;
+        }
+
+        .modal .form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 20px 16px;
             }
-            
+
             .container {
                 border-radius: 24px;
             }
@@ -316,6 +600,15 @@
                 width: 100%;
                 margin-bottom: 12px;
             }
+
+            .users-table {
+                font-size: 14px;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 12px 8px;
+            }
         }
 
         .d-none { display: none !important; }
@@ -335,10 +628,14 @@
             <button class="logout-btn" onclick="window.location.href='/logout'">
                 <i class="fa fa-sign-out"></i> 退出
             </button>
+            <div class="header-info">
+                <span class="username" id="current-username">...</span>
+                <span class="badge" id="user-role-badge">用户</span>
+            </div>
             <h2>OSS 文件/URL 转换工具</h2>
             <p>简单、高效地管理您的文件存储链接</p>
         </div>
-        
+
         <div class="tabs">
             <button class="tab-btn active" data-target="#upload-panel">
                 <i class="fa fa-upload"></i> 文件上传
@@ -346,19 +643,33 @@
             <button class="tab-btn" data-target="#convert-panel">
                 <i class="fa fa-link"></i> URL 转换
             </button>
+            <button class="tab-btn hidden" id="admin-tab" data-target="#admin-panel">
+                <i class="fa fa-users"></i> 用户管理
+            </button>
         </div>
 
         <div class="panels">
             <div class="panel active" id="upload-panel">
-                <form id="upload-form" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label">选择要上传的文件</label>
-                        <input class="form-control" type="file" name="file" required>
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-icon"><i class="fa fa-cloud-upload"></i></div>
+                    <div class="drop-zone-text">拖拽文件到此处上传</div>
+                    <div class="drop-zone-hint">或点击选择文件（支持多文件）</div>
+                    <input type="file" id="file-input" multiple class="hidden" accept="*/*">
+                </div>
+
+                <div class="file-queue hidden" id="file-queue">
+                    <label class="form-label">待上传文件</label>
+                    <div id="file-list"></div>
+                    <div class="mt-4">
+                        <button id="upload-btn" class="btn btn-primary">
+                            <i class="fa fa-cloud-upload"></i> 上传至 OSS
+                        </button>
+                        <button id="clear-queue-btn" class="btn btn-secondary ms-2">
+                            <i class="fa fa-times"></i> 清空队列
+                        </button>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa fa-cloud-upload"></i> 上传至 OSS
-                    </button>
-                </form>
+                </div>
+
                 <div class="upload-result d-none" id="upload-result"></div>
             </div>
 
@@ -395,12 +706,44 @@
                     <div id="progress-list" class="overflow-auto"></div>
                 </div>
             </div>
+
+            <div class="panel" id="admin-panel">
+                <div class="mb-4">
+                    <h3>用户管理</h3>
+                    <p style="color: #86868b; margin-top: 8px;">管理用户账号、权限和激活状态</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- 用户列表将通过 JS 动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script>
+        // 全局状态
+        let currentUser = null;
+        let fileQueue = [];
+        let isUploading = false;
+
         $(function() {
+            // 加载当前用户信息
+            loadCurrentUser();
+
             // 标签页切换
             $('.tab-btn').click(function() {
                 $('.tab-btn').removeClass('active');
@@ -409,11 +752,141 @@
                 $($(this).data('target')).addClass('active');
             });
 
-            // 上传
-            $('#upload-form').submit(function(e) {
+            // ==================== 文件上传相关 ====================
+            const dropZone = $('#drop-zone');
+            const fileInput = $('#file-input');
+
+            // 点击选择文件
+            dropZone.click(function() {
+                fileInput.click();
+            });
+
+            // 文件选择
+            fileInput.change(function() {
+                addFiles(this.files);
+                fileInput.val('');
+            });
+
+            // 拖拽事件
+            dropZone.on('dragover', function(e) {
                 e.preventDefault();
-                var formData = new FormData(this);
-                
+                e.stopPropagation();
+                dropZone.addClass('dragover');
+            });
+
+            dropZone.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.removeClass('dragover');
+            });
+
+            dropZone.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.removeClass('dragover');
+                addFiles(e.originalEvent.dataTransfer.files);
+            });
+
+            // 添加文件到队列
+            function addFiles(files) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    fileQueue.push({
+                        id: Date.now() + '_' + i,
+                        file: file,
+                        status: 'pending'
+                    });
+                }
+                updateFileQueue();
+            }
+
+            // 更新文件队列显示
+            function updateFileQueue() {
+                const queue = $('#file-queue');
+                const list = $('#file-list');
+
+                if (fileQueue.length === 0) {
+                    queue.addClass('hidden');
+                    return;
+                }
+
+                queue.removeClass('hidden');
+                list.empty();
+
+                fileQueue.forEach(item => {
+                    let statusIcon = '';
+                    let statusClass = '';
+                    if (item.status === 'success') {
+                        statusIcon = '<i class="fa fa-check"></i>';
+                        statusClass = 'success';
+                    } else if (item.status === 'error') {
+                        statusIcon = '<i class="fa fa-times"></i>';
+                        statusClass = 'error';
+                    } else if (item.status === 'uploading') {
+                        statusIcon = '<i class="fa fa-spinner fa-spin"></i>';
+                        statusClass = 'uploading';
+                    }
+
+                    const html = `
+                        <div class="file-item" data-id="${item.id}">
+                            <div class="file-icon"><i class="fa fa-file-o"></i></div>
+                            <div class="file-info">
+                                <div class="file-name">${item.file.name}</div>
+                                <div class="file-size">${formatFileSize(item.file.size)}</div>
+                            </div>
+                            <div class="file-status ${statusClass}">
+                                ${statusIcon}
+                            </div>
+                            <button class="remove-file-btn" onclick="removeFile(&quot;${item.id}&quot;)">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    list.append(html);
+                });
+            }
+
+            // 移除文件
+            window.removeFile = function(id) {
+                if (isUploading) return;
+                fileQueue = fileQueue.filter(item => item.id !== id);
+                updateFileQueue();
+            };
+
+            // 清空队列
+            $('#clear-queue-btn').click(function() {
+                if (isUploading) return;
+                fileQueue = [];
+                updateFileQueue();
+                $('#upload-result').addClass('d-none');
+            });
+
+            // 上传文件
+            $('#upload-btn').click(function() {
+                if (isUploading || fileQueue.length === 0) return;
+                uploadFiles();
+            });
+
+            // 执行上传
+            function uploadFiles() {
+                isUploading = true;
+                $('#upload-btn').prop('disabled', true);
+
+                const formData = new FormData();
+                fileQueue.forEach(item => {
+                    if (item.status === 'pending') {
+                        formData.append('files', item.file);
+                    }
+                });
+
+                // 标记所有待上传文件为上传中
+                fileQueue.forEach(item => {
+                    if (item.status === 'pending') {
+                        item.status = 'uploading';
+                    }
+                });
+                updateFileQueue();
+
                 $.ajax({
                     url: '/upload_file',
                     type: 'POST',
@@ -422,21 +895,70 @@
                     processData: false,
                     success: function(res) {
                         if (res.code === 200) {
-                            $('#upload-result').removeClass('d-none alert-danger').addClass('alert-success');
-                            $('#upload-result').html('<strong>上传成功！</strong> <a href="' + res.data.url + '" target="_blank">' + res.data.url + '</a>');
+                            showUploadResults(res.data);
                         } else {
-                            $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
-                            $('#upload-result').html('<strong>失败：</strong> ' + res.msg);
+                            showError(res.msg);
                         }
                     },
-                    error: function() {
-                        $('#upload-result').removeClass('d-none alert-success').addClass('alert-danger');
-                        $('#upload-result').html('<strong>失败：</strong> 服务器异常');
+                    error: function(xhr) {
+                        showError(xhr.responseJSON ? xhr.responseJSON.msg : '上传失败');
+                    },
+                    complete: function() {
+                        isUploading = false;
+                        $('#upload-btn').prop('disabled', false);
                     }
                 });
-            });
+            }
 
-            // 清空
+            // 显示上传结果
+            function showUploadResults(results) {
+                const resultDiv = $('#upload-result');
+                resultDiv.removeClass('d-none alert-danger').addClass('alert-success');
+
+                let html = '<strong>上传完成！</strong>';
+                if (results.length > 1) {
+                    html += ` (${results.length} 个文件)`;
+                }
+                html += '<div class="mt-4">';
+
+                results.forEach(result => {
+                    if (result.success) {
+                        html += `
+                            <div class="result-item">
+                                <i class="fa fa-check success"></i>
+                                <a href="${result.url}" target="_blank">${result.url}</a>
+                            </div>
+                        `;
+                        // 更新队列状态
+                        const item = fileQueue.find(f => f.file.name === result.filename);
+                        if (item) item.status = 'success';
+                    } else {
+                        html += `
+                            <div class="result-item error">
+                                <i class="fa fa-times"></i>
+                                <span>${result.filename}: ${result.error}</span>
+                            </div>
+                        `;
+                        const item = fileQueue.find(f => f.file.name === result.filename);
+                        if (item) item.status = 'error';
+                    }
+                });
+
+                html += '</div>';
+                resultDiv.html(html);
+                updateFileQueue();
+            }
+
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // ==================== URL 转换相关 ====================
             $('#clear-all').click(function() {
                 $('#source-text').val('');
                 $('#converted-text').val('');
@@ -444,7 +966,6 @@
                 $('#total-progress').css('width', '0%').text('0%');
             });
 
-            // 开始转换
             $('#start-convert').click(function() {
                 var sourceText = $('#source-text').val().trim();
                 if (!sourceText) {
@@ -479,7 +1000,6 @@
                 });
             });
 
-            // 轮询进度
             function pollProgress(taskId) {
                 var interval = setInterval(function() {
                     $.ajax({
@@ -506,7 +1026,6 @@
                 }, 500);
             }
 
-            // 更新列表
             function updateList(urls) {
                 if (!urls || urls.length === 0) return;
                 $('#progress-list').empty();
@@ -528,6 +1047,191 @@
                     $('#progress-list').append(html);
                 });
             }
+
+            // ==================== 用户管理相关 ====================
+            function loadCurrentUser() {
+                $.ajax({
+                    url: '/api/current_user',
+                    type: 'GET',
+                    success: function(res) {
+                        if (res.code === 200) {
+                            currentUser = res.data;
+                            $('#current-username').text(currentUser.username);
+                            const badge = $('#user-role-badge');
+                            badge.text(currentUser.role === 'admin' ? '管理员' : '用户');
+                            if (currentUser.role === 'admin') {
+                                badge.addClass('admin');
+                                $('#admin-tab').removeClass('hidden');
+                                loadUsers();
+                            }
+                        }
+                    }
+                });
+            }
+
+            function loadUsers() {
+                $.ajax({
+                    url: '/api/users',
+                    type: 'GET',
+                    success: function(res) {
+                        if (res.code === 200) {
+                            renderUsersTable(res.data);
+                        }
+                    }
+                });
+            }
+
+            function renderUsersTable(users) {
+                const tbody = $('#users-table-body');
+                tbody.empty();
+
+                users.forEach(user => {
+                    const isMe = user.id === currentUser.id;
+                    const statusBadge = user.status === 'active'
+                        ? '<span class="status-badge active">已激活</span>'
+                        : '<span class="status-badge inactive">未激活</span>';
+                    const roleBadge = user.role === 'admin'
+                        ? '<span class="role-badge admin">管理员</span>'
+                        : '<span class="role-badge user">用户</span>';
+
+                    const date = new Date(user.created_at).toLocaleString('zh-CN');
+
+                    let actions = '';
+                    if (!isMe) {
+                        actions += `
+                            <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${user.id}, '${user.status}')">
+                                <i class="fa fa-${user.status === 'active' ? 'ban' : 'check'}"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="editUser(${user.id})">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        `;
+                    } else {
+                        actions = '<span style="color: #86868b; font-size: 14px;">当前用户</span>';
+                    }
+
+                    const html = `
+                        <tr data-id="${user.id}">
+                            <td>${user.username}</td>
+                            <td>${user.email || '-'}</td>
+                            <td>${roleBadge}</td>
+                            <td>${statusBadge}</td>
+                            <td style="font-size: 14px; color: #86868b;">${date}</td>
+                            <td><div class="action-buttons">${actions}</div></td>
+                        </tr>
+                    `;
+                    tbody.append(html);
+                });
+            }
+
+            window.toggleUserStatus = function(userId, currentStatus) {
+                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                const action = newStatus === 'active' ? '激活' : '禁用';
+                if (!confirm(`确定要${action}该用户吗？`)) return;
+
+                $.ajax({
+                    url: '/api/users/' + userId + '/status',
+                    type: 'PUT',
+                    success: function(res) {
+                        if (res.code === 200) {
+                            loadUsers();
+                        } else {
+                            alert(res.msg);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON ? xhr.responseJSON.msg : '操作失败');
+                    }
+                });
+            };
+
+            window.deleteUser = function(userId) {
+                if (!confirm('确定要删除该用户吗？此操作不可撤销。')) return;
+
+                $.ajax({
+                    url: '/api/users/' + userId,
+                    type: 'DELETE',
+                    success: function(res) {
+                        if (res.code === 200) {
+                            loadUsers();
+                        } else {
+                            alert(res.msg);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON ? xhr.responseJSON.msg : '删除失败');
+                    }
+                });
+            };
+
+            window.editUser = function(userId) {
+                const row = $(`tr[data-id="${userId}"]`);
+                const username = row.find('td:nth-child(1)').text();
+                const email = row.find('td:nth-child(2)').text() === '-' ? '' : row.find('td:nth-child(2)').text();
+                const role = row.find('.role-badge').hasClass('admin') ? 'admin' : 'user';
+
+                showEditModal(userId, username, email, role);
+            };
+
+            function showEditModal(userId, username, email, role) {
+                const html = `
+                    <div class="modal-overlay" id="edit-modal">
+                        <div class="modal">
+                            <h3>编辑用户</h3>
+                            <div class="form-group">
+                                <label class="form-label">用户名</label>
+                                <input type="text" class="form-control" id="edit-username" value="${username}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control" id="edit-email" value="${email}" placeholder="邮箱（可选）">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">角色</label>
+                                <select class="form-control" id="edit-role">
+                                    <option value="user" ${role === 'user' ? 'selected' : ''}>用户</option>
+                                    <option value="admin" ${role === 'admin' ? 'selected' : ''}>管理员</option>
+                                </select>
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                                <button class="btn btn-primary" onclick="saveUser(${userId})">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(html);
+            }
+
+            window.closeEditModal = function() {
+                $('#edit-modal').remove();
+            };
+
+            window.saveUser = function(userId) {
+                const email = $('#edit-email').val().trim() || null;
+                const role = $('#edit-role').val();
+
+                $.ajax({
+                    url: '/api/users/' + userId,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ email, role }),
+                    success: function(res) {
+                        if (res.code === 200) {
+                            closeEditModal();
+                            loadUsers();
+                        } else {
+                            alert(res.msg);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON ? xhr.responseJSON.msg : '保存失败');
+                    }
+                });
+            };
         });
     </script>
 </body>
