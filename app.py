@@ -82,6 +82,24 @@ def init_db():
     """初始化数据库"""
     with app.app_context():
         db.create_all()
+        # 创建默认管理员账号（如果不存在）
+        create_default_admin()
+
+
+def create_default_admin():
+    """创建默认管理员账号"""
+    if User.query.count() == 0:
+        admin = User(
+            username='admin',
+            email=None,
+            role='admin',
+            status='active',
+            created_at=datetime.utcnow()
+        )
+        admin.set_password('admin')
+        db.session.add(admin)
+        db.session.commit()
+        print('已创建默认管理员账号: admin / admin')
 
 
 @app.route('/register', methods=['GET'])
@@ -123,8 +141,8 @@ def api_register():
     if User.query.filter_by(username=username).first():
         return jsonify({'code': 400, 'msg': '用户名已存在'}), 400
 
-    # 检查是否为第一个用户
-    is_first_user = User.query.count() == 0
+    # 检查是否为第一个用户（不包括默认admin）
+    is_first_user = User.query.count() == 1 and User.query.filter_by(username='admin').first() is not None
 
     # 创建用户
     user = User(
@@ -235,7 +253,7 @@ def api_update_user(user_id):
     """更新用户信息"""
     user = User.query.get_or_404(user_id)
 
-    # 不允许删除自己
+    # 不允许修改自己
     if user_id == current_user.id:
         return jsonify({'code': 403, 'msg': '不能修改自己的基本信息'}), 403
 
