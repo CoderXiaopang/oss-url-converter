@@ -11,6 +11,8 @@ services:
       - ALIST_BUCKET=${ALIST_BUCKET}
       - URL_EXPIRES=${URL_EXPIRES:-3600}
       - SECRET_KEY=${SECRET_KEY:-oss-converter-secret-key}
+      - AUTH_USERNAME=${AUTH_USERNAME:-admin}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-admin123}
     restart: unless-stopped
     volumes:
       - oss_data:/app/data

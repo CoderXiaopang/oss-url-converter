@@ -88,18 +88,27 @@ def init_db():
 
 def create_default_admin():
     """创建默认管理员账号"""
+    # 从环境变量获取默认管理员账号，如果未设置则使用默认值
+    default_username = os.environ.get('AUTH_USERNAME', 'admin')
+    default_password = os.environ.get('AUTH_PASSWORD', 'admin123')
+    
+    # 检查是否已存在由于环境变量指定的管理员
+    if User.query.filter_by(username=default_username).first():
+        return
+
+    # 如果没有任何用户，创建默认管理员
     if User.query.count() == 0:
         admin = User(
-            username='admin',
+            username=default_username,
             email=None,
             role='admin',
             status='active',
             created_at=datetime.utcnow()
         )
-        admin.set_password('admin')
+        admin.set_password(default_password)
         db.session.add(admin)
         db.session.commit()
-        print('已创建默认管理员账号: admin / admin')
+        print(f'已创建默认管理员账号: {default_username} / {default_password}')
 
 
 @app.route('/register', methods=['GET'])
