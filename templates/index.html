@@ -617,6 +617,29 @@
             display: none !important;
         }
 
+        /* 操作按钮样式 */
+        .action-link {
+            color: #0071e3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-left: 12px;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-link:hover {
+            color: #005bb5;
+            text-decoration: underline;
+        }
+
+        .action-link i {
+            font-size: 12px;
+        }
+
         .ms-2 {
             margin-left: 12px;
         }
@@ -796,14 +819,18 @@
             const dropZone = $('#drop-zone');
             const fileInput = $('#file-input');
 
-            // 点击选择文件
-            dropZone.click(function () {
-                fileInput.click();
+            // 点击选择文件 (修复: 明确触发 input 点击)
+            dropZone.on('click', function (e) {
+                // 防止冒泡触发多次
+                if (e.target !== fileInput[0]) {
+                    fileInput.click();
+                }
             });
 
             // 文件选择
             fileInput.change(function () {
                 addFiles(this.files);
+                // 清空 input 以便下次能选择同一文件
                 fileInput.val('');
             });
 
@@ -831,8 +858,10 @@
             function addFiles(files) {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
+                    // 生成唯一 ID
+                    const id = Date.now() + '_' + i + '_' + Math.random().toString(36).substr(2, 9);
                     fileQueue.push({
-                        id: Date.now() + '_' + i,
+                        id: id,
                         file: file,
                         status: 'pending'
                     });
@@ -850,7 +879,8 @@
                     return;
                 }
 
-                queue.removeClass('hidden');
+                queue.removeClass('d-none').css('visibility', 'visible').css('position', 'static').css('width', 'auto').css('height', 'auto').css('opacity', '1');
+
                 list.empty();
 
                 fileQueue.forEach(item => {
@@ -877,7 +907,7 @@
                             <div class="file-status ${statusClass}">
                                 ${statusIcon}
                             </div>
-                            <button class="remove-file-btn" onclick="removeFile(&quot;${item.id}&quot;)">
+                            <button class="remove-file-btn" onclick="removeFile('${item.id}')">
                                 <i class="fa fa-times"></i>
                             </button>
                         </div>
@@ -950,6 +980,12 @@
                 });
             }
 
+            function showError(msg) {
+                const resultDiv = $('#upload-result');
+                resultDiv.removeClass('d-none alert-success').addClass('alert-danger');
+                resultDiv.html(`<div class="result-item error"><i class="fa fa-times"></i> <span>${msg}</span></div>`);
+            }
+
             // 显示上传结果
             function showUploadResults(results) {
                 const resultDiv = $('#upload-result');
@@ -963,15 +999,30 @@
 
                 results.forEach(result => {
                     if (result.success) {
+                        // 查找对应的本地文件以生成 Base64 (如果不是刚上传的其实找不到，但这里是在上传回调里，应该还在队列中)
+                        // 注意：这里我们使用文件名匹配，如果文件名重复可能会有问题，但通常够用
+                        const fileItem = fileQueue.find(item => item.file.name === result.filename);
+                        const fileId = fileItem ? fileItem.id : null;
+
                         html += `
                             <div class="result-item">
                                 <i class="fa fa-check success"></i>
-                                <a href="${result.url}" target="_blank">${result.url}</a>
+                                <div style="flex: 1; display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                                    <a href="${result.url}" target="_blank" title="${result.url}">${result.url}</a>
+                                </div>
+                                <div style="display: flex; gap: 12px; flex-shrink: 0;">
+                                    <span class="action-link" onclick="copyToClipboard('${result.url}', this)">
+                                        <i class="fa fa-link"></i> 复制链接
+                                    </span>
+                                    ${fileId ? `
+                                    <span class="action-link" onclick="copyBase64('${fileId}', this)">
+                                        <i class="fa fa-code"></i> 复制 Base64
+                                    </span>` : ''}
+                                </div>
                             </div>
                         `;
                         // 更新队列状态
-                        const item = fileQueue.find(f => f.file.name === result.filename);
-                        if (item) item.status = 'success';
+                        if (fileItem) fileItem.status = 'success';
                     } else {
                         html += `
                             <div class="result-item error">
@@ -988,6 +1039,53 @@
                 resultDiv.html(html);
                 updateFileQueue();
             }
+
+            // 复制到剪贴板
+            window.copyToClipboard = function (text, btn) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = $(btn).html();
+                    $(btn).html('<i class="fa fa-check"></i> 已复制');
+                    setTimeout(() => {
+                        $(btn).html(originalText);
+                    }, 2000);
+                }).catch(err => {
+                    console.error('无法复制', err);
+                    alert('复制失败，请手动复制');
+                });
+            };
+
+            // 复制 Base64
+            window.copyBase64 = function (fileId, btn) {
+                const item = fileQueue.find(f => f.id === fileId);
+                if (!item) return;
+
+                const originalText = $(btn).html();
+                $(btn).html('<i class="fa fa-spinner fa-spin"></i> 处理中...');
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const base64 = e.target.result;
+                    navigator.clipboard.writeText(base64).then(() => {
+                        $(btn).html('<i class="fa fa-check"></i> 已复制');
+                        setTimeout(() => {
+                            $(btn).html(originalText);
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('无法复制', err);
+                        $(btn).html('<i class="fa fa-times"></i> 失败');
+                        setTimeout(() => {
+                            $(btn).html(originalText);
+                        }, 2000);
+                    });
+                };
+                reader.onerror = function () {
+                    $(btn).html('<i class="fa fa-times"></i> 读取失败');
+                    setTimeout(() => {
+                        $(btn).html(originalText);
+                    }, 2000);
+                };
+                reader.readAsDataURL(item.file);
+            };
 
             // 格式化文件大小
             function formatFileSize(bytes) {
