@@ -40,6 +40,20 @@ class User(db.Model):
         """是否为激活用户"""
         return self.status == 'active'
 
+    @property
+    def is_active(self):
+        """Flask-Login 要求的属性"""
+        return self.status == 'active'
+
+    @property
+    def is_authenticated(self):
+        """Flask-Login 要求的属性"""
+        return True
+
+    def get_id(self):
+        """Flask-Login 要求的属性"""
+        return str(self.id)
+
     def to_dict(self):
         """转换为字典"""
         return {
