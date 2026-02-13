@@ -236,6 +236,42 @@ def api_current_user():
     })
 
 
+@app.route('/api/change_password', methods=['POST'])
+@login_required
+def api_change_password():
+    """修改密码"""
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'code': 400, 'msg': '请求数据无效'}), 400
+        
+    old_password = data.get('old_password', '')
+    new_password = data.get('new_password', '')
+    confirm_password = data.get('confirm_password', '')
+    
+    if not old_password or not new_password:
+        return jsonify({'code': 400, 'msg': '请输入原密码和新密码'}), 400
+        
+    if new_password != confirm_password:
+        return jsonify({'code': 400, 'msg': '两次新密码输入不一致'}), 400
+        
+    if len(new_password) < 6:
+        return jsonify({'code': 400, 'msg': '新密码长度至少6位'}), 400
+        
+    # 验证原密码
+    if not current_user.check_password(old_password):
+        return jsonify({'code': 400, 'msg': '原密码错误'}), 400
+        
+    # 更新密码
+    current_user.set_password(new_password)
+    db.session.commit()
+    
+    return jsonify({
+        'code': 200,
+        'msg': '密码修改成功'
+    })
+
+
 @app.route('/logout')
 def logout():
     """登出"""

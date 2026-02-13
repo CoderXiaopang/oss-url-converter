@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -455,7 +456,8 @@
             white-space: nowrap;
         }
 
-        #source-text, #converted-text {
+        #source-text,
+        #converted-text {
             min-height: 240px;
             resize: vertical;
             line-height: 1.7;
@@ -611,23 +613,59 @@
             }
         }
 
-        .d-none { display: none !important; }
-        .ms-2 { margin-left: 12px; }
-        .mb-3 { margin-bottom: 24px; }
-        .mb-4 { margin-bottom: 32px; }
-        .mt-4 { margin-top: 32px; }
-        .overflow-auto { overflow: auto; max-height: 300px; }
-        .text-center { text-align: center; }
-        .row { display: flex; flex-wrap: wrap; margin: 0 -12px; }
-        .col-md-6 { width: 50%; padding: 0 12px; }
+        .d-none {
+            display: none !important;
+        }
+
+        .ms-2 {
+            margin-left: 12px;
+        }
+
+        .mb-3 {
+            margin-bottom: 24px;
+        }
+
+        .mb-4 {
+            margin-bottom: 32px;
+        }
+
+        .mt-4 {
+            margin-top: 32px;
+        }
+
+        .overflow-auto {
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -12px;
+        }
+
+        .col-md-6 {
+            width: 50%;
+            padding: 0 12px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <button class="logout-btn" onclick="window.location.href='/logout'">
-                <i class="fa fa-sign-out"></i> 退出
-            </button>
+            <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 10px;">
+                <button class="logout-btn" style="position: static;" onclick="showChangePasswordModal()">
+                    <i class="fa fa-key"></i> 修改密码
+                </button>
+                <button class="logout-btn" style="position: static;" onclick="window.location.href='/logout'">
+                    <i class="fa fa-sign-out"></i> 退出
+                </button>
+            </div>
             <div class="header-info">
                 <span class="username" id="current-username">...</span>
                 <span class="badge" id="user-role-badge">用户</span>
@@ -677,11 +715,13 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">原始文本（包含 URL）</label>
-                        <textarea class="form-control" id="source-text" rows="8" placeholder="粘贴包含 URL 的文本..."></textarea>
+                        <textarea class="form-control" id="source-text" rows="8"
+                            placeholder="粘贴包含 URL 的文本..."></textarea>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">转换后的文本</label>
-                        <textarea class="form-control" id="converted-text" rows="8" readonly placeholder="结果将显示在这里..."></textarea>
+                        <textarea class="form-control" id="converted-text" rows="8" readonly
+                            placeholder="结果将显示在这里..."></textarea>
                     </div>
                 </div>
 
@@ -740,12 +780,12 @@
         let fileQueue = [];
         let isUploading = false;
 
-        $(function() {
+        $(function () {
             // 加载当前用户信息
             loadCurrentUser();
 
             // 标签页切换
-            $('.tab-btn').click(function() {
+            $('.tab-btn').click(function () {
                 $('.tab-btn').removeClass('active');
                 $(this).addClass('active');
                 $('.panel').removeClass('active');
@@ -757,30 +797,30 @@
             const fileInput = $('#file-input');
 
             // 点击选择文件
-            dropZone.click(function() {
+            dropZone.click(function () {
                 fileInput.click();
             });
 
             // 文件选择
-            fileInput.change(function() {
+            fileInput.change(function () {
                 addFiles(this.files);
                 fileInput.val('');
             });
 
             // 拖拽事件
-            dropZone.on('dragover', function(e) {
+            dropZone.on('dragover', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 dropZone.addClass('dragover');
             });
 
-            dropZone.on('dragleave', function(e) {
+            dropZone.on('dragleave', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 dropZone.removeClass('dragover');
             });
 
-            dropZone.on('drop', function(e) {
+            dropZone.on('drop', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 dropZone.removeClass('dragover');
@@ -847,14 +887,14 @@
             }
 
             // 移除文件
-            window.removeFile = function(id) {
+            window.removeFile = function (id) {
                 if (isUploading) return;
                 fileQueue = fileQueue.filter(item => item.id !== id);
                 updateFileQueue();
             };
 
             // 清空队列
-            $('#clear-queue-btn').click(function() {
+            $('#clear-queue-btn').click(function () {
                 if (isUploading) return;
                 fileQueue = [];
                 updateFileQueue();
@@ -862,7 +902,7 @@
             });
 
             // 上传文件
-            $('#upload-btn').click(function() {
+            $('#upload-btn').click(function () {
                 if (isUploading || fileQueue.length === 0) return;
                 uploadFiles();
             });
@@ -893,17 +933,17 @@
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             showUploadResults(res.data);
                         } else {
                             showError(res.msg);
                         }
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         showError(xhr.responseJSON ? xhr.responseJSON.msg : '上传失败');
                     },
-                    complete: function() {
+                    complete: function () {
                         isUploading = false;
                         $('#upload-btn').prop('disabled', false);
                     }
@@ -959,14 +999,14 @@
             }
 
             // ==================== URL 转换相关 ====================
-            $('#clear-all').click(function() {
+            $('#clear-all').click(function () {
                 $('#source-text').val('');
                 $('#converted-text').val('');
                 $('#progress-list').empty();
                 $('#total-progress').css('width', '0%').text('0%');
             });
 
-            $('#start-convert').click(function() {
+            $('#start-convert').click(function () {
                 var sourceText = $('#source-text').val().trim();
                 if (!sourceText) {
                     alert('请输入文本！');
@@ -982,7 +1022,7 @@
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ text: sourceText }),
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             if (!res.data.task_id) {
                                 $('#converted-text').val(sourceText);
@@ -994,18 +1034,18 @@
                             alert('启动失败：' + res.msg);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('请求失败');
                     }
                 });
             });
 
             function pollProgress(taskId) {
-                var interval = setInterval(function() {
+                var interval = setInterval(function () {
                     $.ajax({
                         url: '/progress/' + taskId,
                         type: 'GET',
-                        success: function(res) {
+                        success: function (res) {
                             if (res.code === 200) {
                                 var data = res.data;
                                 var progress = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
@@ -1019,7 +1059,7 @@
                                 clearInterval(interval);
                             }
                         },
-                        error: function() {
+                        error: function () {
                             clearInterval(interval);
                         }
                     });
@@ -1029,7 +1069,7 @@
             function updateList(urls) {
                 if (!urls || urls.length === 0) return;
                 $('#progress-list').empty();
-                urls.forEach(function(item) {
+                urls.forEach(function (item) {
                     var statusIcon = '', statusClass = '';
                     switch (item.status) {
                         case 'processing': statusIcon = '<i class="fa fa-spinner fa-spin"></i>'; statusClass = 'status-processing'; break;
@@ -1053,7 +1093,7 @@
                 $.ajax({
                     url: '/api/current_user',
                     type: 'GET',
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             currentUser = res.data;
                             $('#current-username').text(currentUser.username);
@@ -1073,7 +1113,7 @@
                 $.ajax({
                     url: '/api/users',
                     type: 'GET',
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             renderUsersTable(res.data);
                         }
@@ -1127,7 +1167,7 @@
                 });
             }
 
-            window.toggleUserStatus = function(userId, currentStatus) {
+            window.toggleUserStatus = function (userId, currentStatus) {
                 const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
                 const action = newStatus === 'active' ? '激活' : '禁用';
                 if (!confirm(`确定要${action}该用户吗？`)) return;
@@ -1135,39 +1175,39 @@
                 $.ajax({
                     url: '/api/users/' + userId + '/status',
                     type: 'PUT',
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             loadUsers();
                         } else {
                             alert(res.msg);
                         }
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         alert(xhr.responseJSON ? xhr.responseJSON.msg : '操作失败');
                     }
                 });
             };
 
-            window.deleteUser = function(userId) {
+            window.deleteUser = function (userId) {
                 if (!confirm('确定要删除该用户吗？此操作不可撤销。')) return;
 
                 $.ajax({
                     url: '/api/users/' + userId,
                     type: 'DELETE',
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             loadUsers();
                         } else {
                             alert(res.msg);
                         }
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         alert(xhr.responseJSON ? xhr.responseJSON.msg : '删除失败');
                     }
                 });
             };
 
-            window.editUser = function(userId) {
+            window.editUser = function (userId) {
                 const row = $(`tr[data-id="${userId}"]`);
                 const username = row.find('td:nth-child(1)').text();
                 const email = row.find('td:nth-child(2)').text() === '-' ? '' : row.find('td:nth-child(2)').text();
@@ -1206,11 +1246,11 @@
                 $('body').append(html);
             }
 
-            window.closeEditModal = function() {
+            window.closeEditModal = function () {
                 $('#edit-modal').remove();
             };
 
-            window.saveUser = function(userId) {
+            window.saveUser = function (userId) {
                 const email = $('#edit-email').val().trim() || null;
                 const role = $('#edit-role').val();
 
@@ -1219,7 +1259,7 @@
                     type: 'PUT',
                     contentType: 'application/json',
                     data: JSON.stringify({ email, role }),
-                    success: function(res) {
+                    success: function (res) {
                         if (res.code === 200) {
                             closeEditModal();
                             loadUsers();
@@ -1227,12 +1267,88 @@
                             alert(res.msg);
                         }
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         alert(xhr.responseJSON ? xhr.responseJSON.msg : '保存失败');
+                    }
+                });
+            };
+
+            // ==================== 修改密码相关 ====================
+            window.showChangePasswordModal = function () {
+                const html = `
+                    <div class="modal-overlay" id="password-modal">
+                        <div class="modal">
+                            <h3>修改密码</h3>
+                            <div class="form-group">
+                                <label class="form-label">原密码</label>
+                                <input type="password" class="form-control" id="old-password" placeholder="请输入原密码">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">新密码</label>
+                                <input type="password" class="form-control" id="new-password" placeholder="请输入新密码（至少6位）">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">确认新密码</label>
+                                <input type="password" class="form-control" id="confirm-password" placeholder="请再次输入新密码">
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn btn-secondary" onclick="closePasswordModal()">取消</button>
+                                <button class="btn btn-primary" onclick="submitPasswordChange()">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(html);
+            };
+
+            window.closePasswordModal = function () {
+                $('#password-modal').remove();
+            };
+
+            window.submitPasswordChange = function () {
+                const oldPassword = $('#old-password').val();
+                const newPassword = $('#new-password').val();
+                const confirmPassword = $('#confirm-password').val();
+
+                if (!oldPassword || !newPassword) {
+                    alert('请输入原密码和新密码');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    alert('两次新密码输入不一致');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    alert('新密码长度至少6位');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/change_password',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        old_password: oldPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    }),
+                    success: function (res) {
+                        if (res.code === 200) {
+                            alert('密码修改成功，请重新登录');
+                            window.location.href = '/logout';
+                        } else {
+                            alert(res.msg);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert(xhr.responseJSON ? xhr.responseJSON.msg : '修改失败');
                     }
                 });
             };
         });
     </script>
 </body>
+
 </html>
