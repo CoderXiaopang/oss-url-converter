@@ -18,11 +18,11 @@ class OSSClient:
 
     def __init__(self):
         # ---------------- 配置区域 ----------------
-        self.endpoint = os.environ.get('ALIST_ENDPOINT', 'http://nas2net.cn:4003')
-        self.access_key = os.environ.get('ALIST_ACCESS_KEY', 'dlrNMURxGSkqg7ORBpuI')
-        self.secret_key = os.environ.get('ALIST_SECRET_KEY', '2BHjYeGAr28VCv8aHtDb0dl9ANVKICnNKSM9KGDr')
-        self.bucket_name = os.environ.get('ALIST_BUCKET', 'OSS_Buckets')
-        self.url_expires = int(os.environ.get('URL_EXPIRES', 3600))  # URL 有效期（秒）
+        self.endpoint = os.environ.get('ALIST_ENDPOINT') or 'http://nas2net.cn:4003'
+        self.access_key = os.environ.get('ALIST_ACCESS_KEY') or 'dlrNMURxGSkqg7ORBpuI'
+        self.secret_key = os.environ.get('ALIST_SECRET_KEY') or '2BHjYeGAr28VCv8aHtDb0dl9ANVKICnNKSM9KGDr'
+        self.bucket_name = os.environ.get('ALIST_BUCKET') or 'OSS_Buckets'
+        self.url_expires = int(os.environ.get('URL_EXPIRES') or 3600)  # URL 有效期（秒）
         # -----------------------------------------
 
         # 初始化 S3 客户端
